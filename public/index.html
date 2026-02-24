@@ -1,0 +1,1451 @@
+    <!DOCTYPE html>
+    <html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>TaskBot Pro - Task Management dengan Telegram</title>
+
+        <!-- CSS -->
+        <link rel="stylesheet" href="style.css" />
+
+        <!-- Font Awesome Icons -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+        <!-- Google Fonts - Inter -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+        <!-- Favicon -->
+        <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" />
+
+        <!-- Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    </head>
+
+    <body class="dark">
+        <!-- =============== LOADING SCREEN =============== -->
+        <div id="loadingScreen" class="loading-screen">
+            <div class="loading-spinner-large"></div>
+            <p>Loading TaskBot Pro...</p>
+        </div>
+
+        <!-- =============== NOTIFICATION CONTAINER =============== -->
+        <div id="notificationContainer"></div>
+
+        <!-- =============== MAIN APP CONTAINER =============== -->
+        <div id="app"></div>
+
+        <!-- =============== AUTH PAGES TEMPLATES =============== -->
+
+        <!-- Login Page Template -->
+        <template id="login-page-template">
+            <div class="auth-container">
+                <div class="auth-card glassmorphism fade-in">
+                    <div class="auth-header">
+                        <div class="auth-logo">
+                            <i class="fas fa-rocket"></i>
+                            <h1>Task<span>Bot</span> Pro</h1>
+                        </div>
+                        <p class="auth-subtitle">Task Management dengan Telegram Integration</p>
+                    </div>
+
+                    <div class="auth-tabs">
+                        <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+                        <button class="auth-tab" onclick="switchAuthTab('register')">Register</button>
+                    </div>
+
+                    <div id="authFormContainer">
+                        <!-- Login Form -->
+                        <form id="loginForm" class="auth-form">
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-user"></i>
+                                    Username / Email
+                                </label>
+                                <input type="text" name="username" required placeholder="Masukkan username atau email" />
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-lock"></i>
+                                    Password
+                                </label>
+                                <div class="password-field">
+                                    <input type="password" name="password" required placeholder="Masukkan password" />
+                                    <button type="button" class="password-toggle" onclick="togglePassword(this)">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="auth-btn">
+                                <i class="fas fa-sign-in-alt"></i>
+                                Login
+                                <div class="btn-loader" style="display: none;">
+                                    <div class="loader-dot"></div>
+                                    <div class="loader-dot"></div>
+                                    <div class="loader-dot"></div>
+                                </div>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="auth-footer">
+                        <a href="#" onclick="showForgotPassword()">Lupa Password?</a>
+                        <span class="separator">•</span>
+                        <a href="#" onclick="toggleTheme()"><i class="fas fa-moon"></i> Theme</a>
+                    </div>
+                </div>
+
+                <div class="auth-decoration">
+                    <div class="decoration-circle"></div>
+                    <div class="decoration-circle"></div>
+                    <div class="decoration-content">
+                        <i class="fab fa-telegram"></i>
+                        <h2>Telegram Verified</h2>
+                        <p>Kode verifikasi dikirim via Telegram Bot</p>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Register Form Template -->
+        <template id="register-form-template">
+            <form id="registerForm" class="auth-form">
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-user-circle"></i>
+                        Nama Lengkap
+                        <span class="required">*</span>
+                    </label>
+                    <input type="text" name="full_name" required placeholder="Masukkan nama lengkap" />
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-user"></i>
+                        Username
+                        <span class="required">*</span>
+                    </label>
+                    <input type="text" name="username" required placeholder="Minimal 3 karakter" />
+                    <small class="form-text">Hanya huruf, angka, dan underscore</small>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-envelope"></i>
+                        Email
+                        <span class="required">*</span>
+                    </label>
+                    <input type="email" name="email" required placeholder="Masukkan email" />
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-lock"></i>
+                        Password
+                        <span class="required">*</span>
+                    </label>
+                    <div class="password-field">
+                        <input type="password" name="password" required placeholder="Minimal 6 karakter" />
+                        <button type="button" class="password-toggle" onclick="togglePassword(this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-lock"></i>
+                        Konfirmasi Password
+                        <span class="required">*</span>
+                    </label>
+                    <div class="password-field">
+                        <input type="password" name="confirm_password" required placeholder="Ulangi password" />
+                        <button type="button" class="password-toggle" onclick="togglePassword(this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <i class="fab fa-telegram"></i>
+                        Telegram Chat ID
+                    </label>
+                    <input type="text" name="telegram_chat_id" placeholder="Untuk verifikasi & notifikasi" />
+                    <small class="form-text">
+                        <i class="fas fa-info-circle"></i>
+                        Dapatkan Chat ID dari @userinfobot di Telegram
+                    </small>
+                </div>
+
+                <button type="submit" class="auth-btn">
+                    <i class="fas fa-user-plus"></i>
+                    Register
+                    <div class="btn-loader" style="display: none;">
+                        <div class="loader-dot"></div>
+                        <div class="loader-dot"></div>
+                        <div class="loader-dot"></div>
+                    </div>
+                </button>
+            </form>
+        </template>
+
+        <!-- Forgot Password Template -->
+        <template id="forgot-password-template">
+            <div class="auth-form">
+                <div class="form-group" style="text-align: center; margin-bottom: 30px;">
+                    <i class="fas fa-question-circle" style="font-size: 48px; color: var(--primary-color);"></i>
+                    <h3 style="margin: 20px 0 10px;">Lupa Password?</h3>
+                    <p style="color: var(--text-secondary);">Masukkan email Anda untuk reset password</p>
+                </div>
+
+                <form id="forgotPasswordForm">
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-envelope"></i>
+                            Email
+                        </label>
+                        <input type="email" name="email" required placeholder="Masukkan email terdaftar" />
+                    </div>
+
+                    <button type="submit" class="auth-btn">
+                        <i class="fas fa-paper-plane"></i>
+                        Kirim Permintaan
+                    </button>
+
+                    <button type="button" class="auth-btn secondary" onclick="showLoginPage()">
+                        <i class="fas fa-arrow-left"></i>
+                        Kembali ke Login
+                    </button>
+                </form>
+            </div>
+        </template>
+
+        <!-- =============== ADMIN DASHBOARD TEMPLATES =============== -->
+
+        <!-- Admin Dashboard Layout -->
+        <template id="admin-dashboard-template">
+            <div class="dashboard-wrapper">
+                <aside class="sidebar glassmorphism">
+                    <div class="sidebar-header">
+    <div class="logo">
+        <i class="fas fa-rocket"></i>
+        <h2>Task<span>Bot</span></h2>
+    </div>
+    
+    <!-- TOMBOL MOBILE MENU - TAMBAHKAN DI SINI -->
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" style="display: none;">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <div class="user-info">
+        <div class="user-avatar">
+            <i class="fas fa-user-shield"></i>
+        </div>
+        <div class="user-details">
+            <span class="user-name" id="sidebarUserName">Administrator</span>
+            <span class="user-role admin">Administrator</span>
+        </div>
+    </div>
+</div>
+
+                    <nav class="sidebar-nav">
+                        <button class="nav-item active" onclick="switchView('dashboard')">
+                            <i class="fas fa-chart-pie"></i>
+                            <span>Dashboard</span>
+                            <span class="nav-badge" id="navDashboardBadge"></span>
+                        </button>
+
+                        
+
+                        <button class="nav-item" onclick="switchView('chat')">
+                            <i class="fas fa-comments"></i>
+                            <span>Chat</span>
+                            <span class="nav-badge" id="navChatBadge"></span>
+                        </button>
+
+                        <button class="nav-item" onclick="switchView('tasks')">
+                            <i class="fas fa-tasks"></i>
+                            <span>Tasks</span>
+                            <span class="nav-badge" id="navTasksBadge"></span>
+                        </button>
+
+                        <button class="nav-item" onclick="switchView('users')">
+                            <i class="fas fa-users"></i>
+                            <span>Users</span>
+                            <span class="nav-badge" id="navUsersBadge"></span>
+                        </button>
+
+                        <button class="nav-item" onclick="switchView('reports')">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Reports</span>
+                        </button>
+
+                        <!-- Di bagian sidebar-nav, tambahkan setelah menu Reports atau sebelum Profile -->
+<button class="nav-item" onclick="switchView('announcements')">
+    <i class="fas fa-bullhorn"></i>
+    <span>Announcements</span>
+    <span class="nav-badge" id="navAnnouncementsBadge"></span>
+</button>
+
+                        <button class="nav-item" onclick="switchView('profile')">
+                            <i class="fas fa-user-cog"></i>
+                            <span>Profile</span>
+                        </button>
+                    </nav>
+
+                    <div class="sidebar-footer">
+                        <button class="nav-item" onclick="toggleTheme()">
+                            <i class="fas fa-moon" id="themeIcon"></i>
+                            <span id="themeText">Dark Mode</span>
+                        </button>
+
+                        <button class="nav-item" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </button>
+
+                        <div class="telegram-status">
+                            <i class="fas fa-circle online" id="telegramStatusIcon"></i>
+                            <span id="telegramStatusText">Telegram Connected</span>
+                        </div>
+                    </div>
+                </aside>
+
+                <main class="main-content">
+                    <header class="content-header">
+                        <div class="header-title">
+                            <h1 id="pageTitle">Dashboard Overview</h1>
+                            <p id="pageSubtitle" class="text-secondary">Selamat datang kembali, Administrator!</p>
+                        </div>
+
+                        <div class="header-actions">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="globalSearch" placeholder="Search..." />
+                            </div>
+
+                            <button class="btn-refresh" onclick="refreshAll()" title="Refresh">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+
+                            <button class="btn-primary" onclick="showCreateTaskModal()">
+                                <i class="fas fa-plus"></i>
+                                <span>New Task</span>
+                            </button>
+                        </div>
+                    </header>
+
+                    <div id="contentArea" class="content-area"></div>
+                </main>
+            </div>
+        </template>
+
+        <!-- User Dashboard Layout -->
+        <template id="user-dashboard-template">
+            <div class="dashboard-wrapper">
+                <aside class="sidebar glassmorphism">
+                    <div class="sidebar-header">
+    <div class="logo">
+        <i class="fas fa-rocket"></i>
+        <h2>Task<span>Bot</span></h2>
+    </div>
+    
+    <!-- TOMBOL MOBILE MENU - TAMBAHKAN DI SINI -->
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" style="display: none;">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <div class="user-info">
+        <div class="user-avatar">
+            <i class="fas fa-user"></i>
+        </div>
+        <div class="user-details">
+            <span class="user-name" id="sidebarUserName">User</span>
+            <span class="user-role">User</span>
+        </div>
+    </div>
+</div>
+
+                    <nav class="sidebar-nav">
+                        <button class="nav-item active" onclick="switchView('dashboard')">
+                            <i class="fas fa-chart-pie"></i>
+                            <span>Dashboard</span>
+                            <span class="nav-badge" id="navDashboardBadge"></span>
+                        </button>
+
+                        <button class="nav-item" onclick="switchView('chat')">
+                            <i class="fas fa-comments"></i>
+                            <span>Chat</span>
+                            <span class="nav-badge" id="navChatBadge"></span>
+                        </button>
+
+                        <button class="nav-item" onclick="switchView('myTasks')">
+                            <i class="fas fa-tasks"></i>
+                            <span>My Tasks</span>
+                            <span class="nav-badge" id="navTasksBadge"></span>
+                        </button>
+
+                        <button class="nav-item" onclick="switchView('completed')">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Completed</span>
+                        </button>
+
+                        <button class="nav-item" onclick="switchView('profile')">
+                            <i class="fas fa-user-cog"></i>
+                            <span>Profile</span>
+                        </button>
+                    </nav>
+
+                    <div class="sidebar-footer">
+                        <button class="nav-item" onclick="toggleTheme()">
+                            <i class="fas fa-moon" id="themeIcon"></i>
+                            <span id="themeText">Dark Mode</span>
+                        </button>
+
+                        <button class="nav-item" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </button>
+
+                        <div class="telegram-status">
+                            <i class="fas fa-circle" id="telegramStatusIcon"></i>
+                            <span id="telegramStatusText">Telegram Not Verified</span>
+                        </div>
+                    </div>
+                </aside>
+
+                <main class="main-content">
+                    <header class="content-header">
+                        <div class="header-title">
+                            <h1 id="pageTitle">My Dashboard</h1>
+                            <p id="pageSubtitle" class="text-secondary">Task Overview</p>
+                        </div>
+
+                        <div class="header-actions">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="globalSearch" placeholder="Search tasks..." />
+                            </div>
+
+                            <button class="btn-refresh" onclick="refreshAll()" title="Refresh">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </header>
+
+                    <div id="contentArea" class="content-area"></div>
+                </main>
+            </div>
+        </template>
+
+        <!-- =============== GROUP TEMPLATES =============== -->
+
+<!-- Groups View Template -->
+<template id="groups-view-template">
+    <div class="groups-view">
+        <div class="groups-header glassmorphism">
+            <h3><i class="fas fa-users"></i> Groups</h3>
+            <button class="btn-primary" onclick="showCreateGroupModal()">
+                <i class="fas fa-plus"></i> Create Group
+            </button>
+        </div>
+
+        <div class="groups-tabs">
+            <button class="tab-btn active" onclick="switchGroupsTab('my-groups')">My Groups</button>
+            <button class="tab-btn" onclick="switchGroupsTab('invitations')">
+                Invitations
+                <span class="badge" id="groupInvitationsBadge" style="display: none;">0</span>
+            </button>
+        </div>
+
+        <div id="groupsContainer" class="groups-container">
+            <div class="loading-state">
+                <div class="loading-spinner"></div>
+                <p>Loading groups...</p>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Create Group Modal Template -->
+<template id="create-group-modal-template">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-users"></i> Create New Group</h3>
+            <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <form id="createGroupForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>Group Avatar</label>
+                    <div class="group-avatar-upload" id="groupAvatarPreview">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="file-upload-area" id="groupAvatarDropZone">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag & drop avatar atau <span class="browse-link">browse</span></p>
+                        <input type="file" name="avatar" id="groupAvatarInput" accept="image/*" style="display: none;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Group Name <span class="required">*</span></label>
+                    <input type="text" name="name" required placeholder="e.g., QA Team, Developers">
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" rows="3" placeholder="Group description..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="this.closest('.modal').remove()">Cancel</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Create Group
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</template>
+
+<!-- Group Detail Modal Template -->
+<template id="group-detail-modal-template">
+    <div class="modal-content large">
+        <div class="modal-header">
+            <h3><i class="fas fa-users"></i> Group Details</h3>
+            <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <div id="groupDetailContainer"></div>
+        </div>
+    </div>
+</template>
+
+<!-- Add Members Modal Template -->
+<template id="add-members-modal-template">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-user-plus"></i> Add Members</h3>
+            <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Search users</label>
+                <div class="search-input">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="addMembersSearch" placeholder="Search by username or name...">
+                </div>
+            </div>
+
+            <div id="availableUsersList" class="available-users-list">
+                <div class="loading-state"><div class="loading-spinner small"></div></div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="this.closest('.modal').remove()">Cancel</button>
+                <button type="button" class="btn-primary" onclick="addSelectedMembers()">
+                    <i class="fas fa-user-plus"></i> Add Selected
+                </button>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Invitations Modal Template -->
+<template id="invitations-modal-template">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-envelope"></i> Group Invitations</h3>
+            <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <div id="invitationsList" class="invitations-list">
+                <div class="loading-state"><div class="loading-spinner small"></div></div>
+            </div>
+        </div>
+    </div>
+</template>
+
+        <!-- =============== DASHBOARD CONTENT TEMPLATES =============== -->
+
+        <template id="dashboard-content-template">
+            <div class="dashboard-content">
+                <div class="stats-grid" id="statsContainer">
+                    <div class="stat-card glassmorphism">
+                        <div class="stat-icon pending"><i class="fas fa-clock"></i></div>
+                        <div class="stat-details">
+                            <h3>Pending</h3>
+                            <div class="stat-number" id="statPending">0</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card glassmorphism">
+                        <div class="stat-icon in-progress"><i class="fas fa-sync-alt"></i></div>
+                        <div class="stat-details">
+                            <h3>In Progress</h3>
+                            <div class="stat-number" id="statProgress">0</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card glassmorphism">
+                        <div class="stat-icon completed"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-details">
+                            <h3>Completed</h3>
+                            <div class="stat-number" id="statCompleted">0</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card glassmorphism">
+                        <div class="stat-icon approved"><i class="fas fa-check-double"></i></div>
+                        <div class="stat-details">
+                            <h3>Approved</h3>
+                            <div class="stat-number" id="statApproved">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card glassmorphism">
+                        <h3><i class="fas fa-chart-pie"></i> Task Distribution</h3>
+                        <canvas id="taskChart"></canvas>
+                    </div>
+
+                    <div class="chart-card glassmorphism">
+                        <h3><i class="fas fa-chart-line"></i> Weekly Activity</h3>
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="recent-tasks glassmorphism">
+                    <div class="section-header">
+                        <h3><i class="fas fa-history"></i> Recent Tasks</h3>
+                        <a href="#" onclick="switchView('tasks')">View All</a>
+                    </div>
+                    <div id="recentTasksList" class="tasks-list">
+                        <div class="loading-state"><div class="loading-spinner"></div></div>
+                    </div>
+                </div>
+
+                <div class="activity-log glassmorphism">
+                    <div class="section-header">
+                        <h3><i class="fas fa-bell"></i> Recent Activity</h3>
+                        <span class="badge">Live</span>
+                    </div>
+                    <div id="activityList" class="activity-list"></div>
+                </div>
+            </div>
+        </template>
+
+        <template id="tasks-view-template">
+            <div class="tasks-view">
+                <div class="tasks-filters glassmorphism">
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <select id="filterStatus" onchange="filterTasks()">
+                            <option value="all">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group" id="assigneeFilterGroup">
+                        <label>Assignee</label>
+                        <select id="filterAssignee" onchange="filterTasks()">
+                            <option value="all">All Users</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Sort By</label>
+                        <select id="filterSort" onchange="filterTasks()">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="title">Title A-Z</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-actions">
+                        <button class="btn-secondary" onclick="resetFilters()">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tasks-container glassmorphism">
+                    <div id="tasksList" class="tasks-grid">
+                        <div class="loading-state">
+                            <div class="loading-spinner"></div>
+                            <p>Loading tasks...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template id="users-view-template">
+            <div class="users-view">
+                <div class="users-header glassmorphism">
+                    <h3><i class="fas fa-users"></i> User Management</h3>
+                    <button class="btn-primary" onclick="showCreateUserModal()">
+                        <i class="fas fa-user-plus"></i> Add User
+                    </button>
+                </div>
+
+                <div class="users-table-container glassmorphism">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Telegram</th>
+                                <th>Status</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr>
+                                <td colspan="8" class="text-center">
+                                    <div class="loading-spinner"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </template>
+
+        <template id="profile-view-template">
+            <div class="profile-view">
+                <div class="profile-grid">
+                    <div class="profile-card glassmorphism">
+                        <div class="profile-avatar">
+                            <i class="fas fa-user-circle"></i>
+                            <span class="status-badge" id="profileTelegramBadge">
+                                <i class="fas fa-clock"></i>
+                            </span>
+                        </div>
+                        <h2 id="profileFullName">User Name</h2>
+                        <p class="username" id="profileUsername">@username</p>
+                        <p class="role-badge" id="profileRole">user</p>
+
+                        <div class="profile-stats">
+                            <div class="stat">
+                                <span class="label">Tasks Completed</span>
+                                <span class="value" id="profileTasksCompleted">0</span>
+                            </div>
+                            <div class="stat">
+                                <span class="label">Approval Rate</span>
+                                <span class="value" id="profileApprovalRate">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-form glassmorphism">
+                        <h3><i class="fas fa-edit"></i> Edit Profile</h3>
+
+                        <form id="profileForm">
+                            <div class="form-group">
+                                <label>Nama Lengkap</label>
+                                <input type="text" name="full_name" id="profileInputFullName" />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" name="email" id="profileInputEmail" />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Telegram Chat ID</label>
+                                <div class="input-group">
+                                    <input type="text" name="telegram_chat_id" id="profileInputTelegram" />
+                                    <button type="button" class="btn-secondary" onclick="verifyTelegram()">
+                                        <i class="fab fa-telegram"></i> Verify
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Change Password</label>
+                                <input type="password" name="current_password" placeholder="Current Password" />
+                                <input type="password" name="new_password" placeholder="New Password" />
+                                <input type="password" name="confirm_password" placeholder="Confirm New Password" />
+                            </div>
+
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-save"></i> Update Profile
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template id="reports-view-template">
+            <div class="reports-view">
+                <div class="reports-header glassmorphism">
+                    <h3><i class="fas fa-chart-bar"></i> Reports & Analytics</h3>
+                    <div class="report-actions">
+                        <button class="btn-secondary" onclick="exportReport('pdf')">
+                            <i class="fas fa-file-pdf"></i> Export PDF
+                        </button>
+                        <button class="btn-secondary" onclick="exportReport('excel')">
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </button>
+                    </div>
+                </div>
+
+                <div class="reports-grid">
+                    <div class="report-card glassmorphism">
+                        <h4>Task Completion Rate</h4>
+                        <div class="report-chart-container">
+                            <canvas id="completionRateChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="report-card glassmorphism">
+                        <h4>User Performance</h4>
+                        <div class="report-chart-container">
+                            <canvas id="userPerformanceChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="report-card glassmorphism">
+                        <h4>Test Case Success Rate</h4>
+                        <div class="report-chart-container">
+                            <canvas id="testSuccessChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="report-card glassmorphism">
+                        <h4>Weekly Summary</h4>
+                        <div class="report-stats">
+                            <div class="stat-item">
+                                <span class="label">Tasks Created</span>
+                                <span class="value" id="weeklyTasksCreated">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="label">Tasks Completed</span>
+                                <span class="value" id="weeklyTasksCompleted">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="label">Tests Passed</span>
+                                <span class="value" id="weeklyTestsPassed">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="label">Active Users</span>
+                                <span class="value" id="weeklyActiveUsers">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- =============== MODAL TEMPLATES =============== -->
+
+        <template id="create-task-modal-template">
+            <div class="modal-content large">
+                <div class="modal-header">
+                    <h3><i class="fas fa-plus-circle"></i> Buat Task Baru</h3>
+                    <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="createTaskForm">
+                        <div class="form-group">
+                            <label>Judul Task <span class="required">*</span></label>
+                            <input type="text" name="title" required placeholder="Contoh: Fix Bug Login Page" />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Deskripsi <span class="required">*</span></label>
+                            <textarea name="description" required rows="4" placeholder="Jelaskan task secara detail..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Assignee <span class="required">*</span></label>
+                            <select name="assignee_id" id="taskAssigneeSelect" required>
+                                <option value="">Pilih user</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Lampiran File</label>
+                            <div class="file-upload-area" id="modalFileDropZone">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Drag & drop file atau <span class="browse-link">browse</span></p>
+                                <input type="file" name="file" id="modalFileInput" style="display: none;" />
+                            </div>
+                            <div id="modalFilePreview" class="file-preview"></div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="this.closest('.modal').remove()">Batal</button>
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-paper-plane"></i> Buat Task
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </template>
+
+        <template id="task-detail-modal-template">
+            <div class="modal-content large">
+                <div class="modal-header">
+                    <h3><i class="fas fa-info-circle"></i> Detail Task</h3>
+                    <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="task-detail" id="taskDetailContainer"></div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Update verification-modal-template -->
+<template id="verification-modal-template">
+    <div class="modal-content" style="max-width: 450px;">
+        <div class="modal-header">
+            <h3><i class="fab fa-telegram"></i> Verifikasi Akun</h3>
+            <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+        </div>
+        <div class="modal-body" style="text-align: center;">
+            <i class="fab fa-telegram" style="font-size: 64px; color: #0088cc; margin-bottom: 20px;"></i>
+            <p style="margin-bottom: 20px;">
+                Akun Anda perlu diverifikasi via Telegram.<br>
+                Chat dengan bot <strong>@newregistrasiBot</strong> dan kirim perintah <strong>/verify</strong>
+            </p>
+            
+            <div class="verification-instructions" style="background: var(--bg-hover); padding: 15px; border-radius: var(--radius-md); margin: 20px 0; text-align: left;">
+                <h4 style="margin-bottom: 10px; color: var(--primary);"><i class="fas fa-list"></i> Langkah-langkah:</h4>
+                <ol style="margin-left: 20px; color: var(--text-secondary); line-height: 1.8;">
+                    <li>Buka Telegram dan cari <strong>@newregistrasiBot</strong></li>
+                    <li>Kirim perintah <strong>/start</strong></li>
+                    <li>Kirim perintah <strong>/verify</strong></li>
+                    <li>Masukkan email Anda: <strong>${escapeHtml(currentUser?.email || '')}</strong></li>
+                    <li>Bot akan mengirimkan kode 6 digit</li>
+                    <li>Masukkan kode di bawah ini</li>
+                </ol>
+            </div>
+            
+            <div class="verification-code-input">
+                <input type="text" id="verificationCode" maxlength="6" 
+                    placeholder="Masukkan 6 digit kode" 
+                    style="text-align: center; font-size: 24px; letter-spacing: 8px; width: 100%; padding: 12px;">
+            </div>
+            
+            <div style="display: flex; gap: 12px; margin-top: 30px;">
+                <button
+                    id="verifyCodeBtn"
+                    data-user-id=""
+                    onclick="verifyTelegramCode(this.dataset.userId, document.getElementById('verificationCode').value)"
+                    class="auth-btn"
+                    style="flex: 1;"
+                >
+                    <i class="fas fa-check"></i> Verifikasi
+                </button>
+                <button onclick="this.closest('.modal').remove()" class="auth-btn secondary" style="flex: 1;">
+                    Nanti
+                </button>
+            </div>
+            
+            <p style="margin-top: 20px; font-size: 0.9rem; color: var(--text-muted);">
+                <i class="fas fa-info-circle"></i>
+                Kode berlaku selama 10 menit
+            </p>
+        </div>
+    </div>
+</template>
+
+        <template id="add-test-case-modal-template">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-vial"></i> Tambah Test Case</h3>
+                    <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="addTestCaseForm">
+                        <input type="hidden" name="task_id" id="testCaseTaskId" />
+
+                        <div class="form-group">
+                            <label>Nama Test <span class="required">*</span></label>
+                            <input type="text" name="test_name" required placeholder="Contoh: Login dengan credential valid" />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Deskripsi Test</label>
+                            <textarea name="test_description" rows="3" placeholder="Jelaskan skenario test..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Input Data</label>
+                            <textarea name="input_data" rows="2" placeholder="Data input yang digunakan"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Expected Output</label>
+                            <textarea name="expected_output" rows="2" placeholder="Hasil yang diharapkan"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Screenshot (Opsional)</label>
+                            <input type="file" name="screenshot" accept="image/*" />
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="this.closest('.modal').remove()">Batal</button>
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-save"></i> Simpan Test Case
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </template>
+
+        <template id="reject-task-modal-template">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-times-circle"></i> Tolak Task</h3>
+                    <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="rejectTaskForm">
+                        <input type="hidden" name="task_id" id="rejectTaskId" />
+
+                        <div class="form-group">
+                            <label>Alasan Penolakan <span class="required">*</span></label>
+                            <textarea name="reason" required rows="4" placeholder="Jelaskan alasan mengapa task ditolak..."></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="this.closest('.modal').remove()">Batal</button>
+                            <button type="submit" class="btn-warning">
+                                <i class="fas fa-times"></i> Tolak Task
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </template>
+
+        <template id="create-user-modal-template">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-user-plus"></i> Tambah User Baru</h3>
+                    <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="createUserForm">
+                        <div class="form-group">
+                            <label>Username <span class="required">*</span></label>
+                            <input type="text" name="username" required placeholder="Masukkan username" />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Email <span class="required">*</span></label>
+                            <input type="email" name="email" required placeholder="Masukkan email" />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Password <span class="required">*</span></label>
+                            <input type="password" name="password" required placeholder="Masukkan password" />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nama Lengkap</label>
+                            <input type="text" name="full_name" placeholder="Masukkan nama lengkap" />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Role</label>
+                            <select name="role">
+                                <option value="user">User</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Telegram Chat ID</label>
+                            <input type="text" name="telegram_chat_id" placeholder="Opsional" />
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="this.closest('.modal').remove()">Batal</button>
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-save"></i> Simpan User
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </template>
+
+        <template id="reset-password-modal-template">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-key"></i> Reset Password</h3>
+                    <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="resetPasswordForm">
+                        <input type="hidden" name="user_id" id="resetPasswordUserId" />
+
+                        <div class="form-group">
+                            <label>Password Baru <span class="required">*</span></label>
+                            <div class="password-field">
+                                <input type="password" name="new_password" required placeholder="Minimal 6 karakter" />
+                                <button type="button" class="password-toggle" onclick="togglePassword(this)">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Konfirmasi Password <span class="required">*</span></label>
+                            <div class="password-field">
+                                <input type="password" name="confirm_password" required placeholder="Ulangi password" />
+                                <button type="button" class="password-toggle" onclick="togglePassword(this)">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="this.closest('.modal').remove()">Batal</button>
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-save"></i> Reset Password
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </template>
+
+        <!-- =============== CHAT TEMPLATES =============== -->
+
+        <template id="chat-view-template">
+            <div class="chat-view">
+                <div class="chat-container glassmorphism">
+                    <div class="chat-sidebar">
+                        <div class="chat-sidebar-header">
+                            <h3><i class="fas fa-comments"></i> Chats</h3>
+                            <button class="btn-icon" onclick="showAddFriendModal()" title="Add Friend">
+                                <i class="fas fa-user-plus"></i>
+                            </button>
+                        </div>
+
+                        <div class="chat-search">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="chatSearch" placeholder="Search chats..." onkeyup="filterChats()" />
+                        </div>
+
+                        <div class="friend-requests-badge" id="friendRequestsBadge" style="display: none;" onclick="showFriendRequests()">
+                            <i class="fas fa-user-friends"></i>
+                            <span>Friend Requests</span>
+                            <span class="badge" id="friendRequestsCount">0</span>
+                        </div>
+
+                        <div class="chat-rooms-list" id="chatRoomsList">
+                            <div class="loading-state"><div class="loading-spinner small"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="chat-main" id="chatMainArea">
+                        <div class="chat-placeholder">
+                            <i class="fas fa-comment-dots"></i>
+                            <h3>Select a chat to start messaging</h3>
+                            <p>Choose a friend from the list to begin conversation</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template id="chat-room-template">
+    <div class="chat-room">
+        <!-- Header -->
+        <div class="chat-room-header">
+            <div class="chat-room-info">
+                <button class="btn-icon back-button" onclick="closeChatRoom()" title="Kembali">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="chat-room-avatar">
+                    <img id="chatRoomAvatar" src="/img/default-avatar.png" alt="avatar" />
+                </div>
+                <div class="chat-room-details">
+                    <h4 id="chatRoomName">Loading...</h4>
+                    <span class="chat-room-status" id="chatRoomStatus">online</span>
+                </div>
+            </div>
+            <div class="chat-room-actions">
+                <button class="btn-icon" onclick="showRoomInfo()" title="Room Info">
+                    <i class="fas fa-info-circle"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="chat-messages" id="chatMessages">
+            <div class="loading-state"><div class="loading-spinner small"></div></div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="chat-input-area">
+            <div class="chat-typing-indicator" id="typingIndicator" style="display: none;">
+                <span>Someone is typing</span>
+                <span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>
+            </div>
+
+            <div class="chat-input-wrapper">
+                <button class="btn-icon" onclick="showFileUploadModal()" title="Attach File">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+                <button class="btn-icon" onclick="toggleEmojiPicker()" title="Emoji">
+                    <i class="fas fa-smile"></i>
+                </button>
+                <textarea
+                    id="chatMessageInput"
+                    placeholder="Type a message..."
+                    rows="1"
+                    onkeyup="handleTyping(event)"
+                    onkeydown="handleEnterKey(event)"
+                ></textarea>
+                <button class="btn-send" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</template>
+
+        <!-- Upload Profile Picture Modal -->
+        <template id="upload-profile-picture-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-camera"></i> Upload Foto Profile</h3>
+                    <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="profile-picture-preview" id="profilePicturePreview">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+
+                    <div class="file-upload-area" id="profilePictureDropZone">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag & drop foto atau <span class="browse-link" onclick="document.getElementById('profilePictureInput').click()">browse</span></p>
+                        <input
+                            type="file"
+                            id="profilePictureInput"
+                            accept="image/*"
+                            style="display: none;"
+                            onchange="handleProfilePictureSelect(this.files[0])"
+                        />
+                    </div>
+
+                    <!-- FIX: profilePicturePreview2 dihapus karena tidak dipakai JS -->
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="this.closest('.modal').remove()">Cancel</button>
+                        <button type="button" class="btn-primary" onclick="uploadProfilePicture()">Upload</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template id="add-friend-modal-template">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-user-plus"></i> Add Friend</h3>
+                    <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Search by username, email, or name</label>
+                        <div class="search-input">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="friendSearchInput" placeholder="Start typing..." onkeyup="searchUsers()" />
+                        </div>
+                    </div>
+
+                    <div id="userSearchResults" class="user-search-results">
+                        <div class="search-placeholder">
+                            <i class="fas fa-users"></i>
+                            <p>Search for users to add as friends</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template id="friend-requests-modal-template">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-user-friends"></i> Friend Requests</h3>
+                    <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                </div>
+
+                <div class="modal-body">
+                    <div id="friendRequestsList" class="friend-requests-list">
+                        <div class="loading-state"><div class="loading-spinner small"></div></div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template id="chat-file-upload-modal-template">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-upload"></i> Upload File</h3>
+                    <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="file-upload-area" id="chatFileDropZone">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag & drop file atau <span class="browse-link" onclick="document.getElementById('chatFileInput').click()">browse</span></p>
+                        <input type="file" id="chatFileInput" style="display: none;" onchange="handleChatFileSelect(this.files[0])" />
+                    </div>
+
+                    <div id="chatFilePreview" class="file-preview"></div>
+
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label>Optional message</label>
+                        <textarea id="chatFileMessage" rows="3" placeholder="Add a message..."></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="this.closest('.modal').remove()">Cancel</button>
+                        <button type="button" class="btn-primary" onclick="uploadChatFile()">Send</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template id="delete-chat-modal-template">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-trash"></i> Delete Chat</h3>
+                    <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                </div>
+
+                <div class="modal-body">
+                    <p style="margin-bottom: 20px;">
+                        Are you sure you want to delete all messages in this chat? This action cannot be undone.
+                    </p>
+
+                    <div class="form-group">
+                        <label>Reason (optional)</label>
+                        <textarea id="deleteChatReason" rows="3" placeholder="Enter reason for deletion..."></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="this.closest('.modal').remove()">Cancel</button>
+                        <button type="button" class="btn-danger" onclick="deleteChatMessages()">Delete All Messages</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Announcement Modal Template -->
+<template id="announcement-modal-template">
+    <div class="modal announcement-modal" id="announcementModal">
+        <div class="modal-content announcement-content">
+            <button class="modal-close announcement-close" onclick="closeAnnouncementModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="announcement-carousel" id="announcementCarousel">
+                <!-- Announcements will be inserted here -->
+            </div>
+            
+            <div class="announcement-dots" id="announcementDots"></div>
+            
+            <div class="announcement-footer" style="justify-content: center;">
+    <button class="btn-primary" onclick="closeAnnouncementModal()">
+        Tutup
+    </button>
+</div>
+        </div>
+    </div>
+</template>
+
+<!-- Admin Announcement Management Template -->
+<template id="admin-announcements-template">
+    <div class="announcements-admin">
+        <div class="announcements-header glassmorphism">
+            <h3><i class="fas fa-bullhorn"></i> Kelola Announcements</h3>
+            <button class="btn-primary" onclick="showCreateAnnouncementModal()">
+                <i class="fas fa-plus"></i> Buat Announcement
+            </button>
+        </div>
+        
+        <div class="announcements-list glassmorphism">
+            <table class="announcements-table">
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Judul</th>
+                        <th>Tipe</th>
+                        <th>Priority</th>
+                        <th>Periode</th>
+                        <th>Dilihat</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="announcementsTableBody">
+                    <tr>
+                        <td colspan="7" class="text-center">
+                            <div class="loading-spinner small"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</template>
+
+        <template id="room-info-modal-template">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-info-circle"></i> Room Information</h3>
+                    <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="room-info" id="roomInfoContent"></div>
+                </div>
+            </div>
+        </template>
+
+        <!-- =============== SCRIPTS =============== -->
+
+        <!-- Socket.IO -->
+        <script src="/socket.io/socket.io.js"></script>
+
+        <!-- Main Application Script -->
+        <script src="script.js"></script>
+    </body>
+    </html>
